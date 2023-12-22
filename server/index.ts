@@ -2,15 +2,21 @@ import { promise } from "zod";
 import { router } from "./trpc";
 import { createHTTPServer } from '@trpc/server/adapters/standalone';
 import { User, Todo } from "./db/script";
+import { userRouter } from "./routers/user";
+import { todoRouter } from "./routers/todo";
+import cors from 'cors'
+
 var jwt = require('jsonwebtoken');
 const SECRET = "qwe1141";
 
 const appRouter = router({
-
+    user: userRouter,
+    todo: todoRouter
 })
 
 
 const server = createHTTPServer({
+    middleware: cors(),
     router: appRouter,
     createContext(opts) {
         let authHeader = opts.req.headers['authorization'];
@@ -22,7 +28,7 @@ const server = createHTTPServer({
                     //@ts-ignore
                     jwt.verify(token, SECRET, (err, user) => {
                         if (user) {
-                            resolve({ db: { User, Todo }, userId: user.userid })
+                            resolve({ db: { User, Todo }, userId: user.userId })
                         }
                         else {
                             resolve({ db: { User, Todo } })

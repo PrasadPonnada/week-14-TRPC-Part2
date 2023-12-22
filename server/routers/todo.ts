@@ -1,11 +1,10 @@
+import { isLoggedIn } from '../middleware/user';
 import { router, publicProcedure } from '../trpc'
 import { z } from 'zod'
 
-import { TRPCError } from "@trpc/server";
-
-
 export const todoRouter = router({
     todoCreate: publicProcedure
+        .use(isLoggedIn)
         .input(z.object({
             title: z.string(),
             description: z.string(),
@@ -36,9 +35,11 @@ export const todoRouter = router({
             }
         }),
     todoGet: publicProcedure
+        .use(isLoggedIn)
         .output(z.array(z.object({
             id: z.number(),
             title: z.string(),
+            description: z.string().nullable(),
             isDone: z.boolean()
         })))
         .query(async (opts) => {
@@ -49,12 +50,10 @@ export const todoRouter = router({
                 select: {
                     id: true,
                     title: true,
-                    isDone: true
+                    isDone: true,
+                    description: true
                 }
             })
             return response;
         })
-
-
-
 })
